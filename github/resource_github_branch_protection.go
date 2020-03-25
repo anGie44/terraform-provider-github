@@ -433,29 +433,31 @@ func requireSignedCommitsUpdate(d *schema.ResourceData, meta interface{}) (err e
 func flattenAndSetRequiredPullRequestReviews(d *schema.ResourceData, protection *github.Protection) error {
 	rprr := protection.RequiredPullRequestReviews
 	if rprr != nil {
-		users := make([]interface{}, 0, len(rprr.DismissalRestrictions.Users))
-		for _, u := range rprr.DismissalRestrictions.Users {
-			if u.Login != nil {
-				users = append(users, *u.Login)
+		if rprr.DismissalRestrictions != nil {
+			users := make([]interface{}, 0, len(rprr.DismissalRestrictions.Users))
+			for _, u := range rprr.DismissalRestrictions.Users {
+				if u.Login != nil {
+					users = append(users, *u.Login)
+				}
 			}
-		}
 
-		teams := make([]interface{}, 0, len(rprr.DismissalRestrictions.Teams))
-		for _, t := range rprr.DismissalRestrictions.Teams {
-			if t.Slug != nil {
-				teams = append(teams, *t.Slug)
+			teams := make([]interface{}, 0, len(rprr.DismissalRestrictions.Teams))
+			for _, t := range rprr.DismissalRestrictions.Teams {
+				if t.Slug != nil {
+					teams = append(teams, *t.Slug)
+				}
 			}
-		}
 
-		return d.Set("required_pull_request_reviews", []interface{}{
-			map[string]interface{}{
-				"dismiss_stale_reviews":           rprr.DismissStaleReviews,
-				"dismissal_users":                 schema.NewSet(schema.HashString, users),
-				"dismissal_teams":                 schema.NewSet(schema.HashString, teams),
-				"require_code_owner_reviews":      rprr.RequireCodeOwnerReviews,
-				"required_approving_review_count": rprr.RequiredApprovingReviewCount,
-			},
-		})
+			return d.Set("required_pull_request_reviews", []interface{}{
+				map[string]interface{}{
+					"dismiss_stale_reviews":           rprr.DismissStaleReviews,
+					"dismissal_users":                 schema.NewSet(schema.HashString, users),
+					"dismissal_teams":                 schema.NewSet(schema.HashString, teams),
+					"require_code_owner_reviews":      rprr.RequireCodeOwnerReviews,
+					"required_approving_review_count": rprr.RequiredApprovingReviewCount,
+				},
+			})
+		}
 	}
 
 	return d.Set("required_pull_request_reviews", []interface{}{})
